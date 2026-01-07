@@ -143,8 +143,8 @@ fn spawn_ldtk_int_grid_layer(
             );
 
             sprite.color.set_alpha(tile.a as f32);
-            sprite.flip_x = tile.f & 0x01 != 0;
-            sprite.flip_y = tile.f & 0x10 != 0;
+            sprite.flip_x = tile.f & 0b01 != 0;
+            sprite.flip_y = tile.f & 0b10 != 0;
 
             commands.spawn((coord, transform, sprite, LDtkTile)).id()
         })
