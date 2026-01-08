@@ -1,3 +1,7 @@
+// 一些修改
+// 1. layer_instance_type 字段的类型由字符串改为枚举
+// 2. [x, y] 类型的 Vec 修改为 Vec2
+
 // Example code that deserializes and serializes the model.
 // extern crate serde;
 // #[macro_use]
@@ -11,6 +15,7 @@
 //     let model: LdtkJson = serde_json::from_str(&json).unwrap();
 // }
 
+use bevy::math::{IVec2, Vec2};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -1203,7 +1208,7 @@ pub struct ForcedRefs {
 pub struct EntityInstance {
     /// Grid-based coordinates (`[x,y]` format)
     #[serde(rename = "__grid")]
-    pub grid: Vec<i64>,
+    pub grid: IVec2,
 
     /// Entity definition identifier
     #[serde(rename = "__identifier")]
@@ -1211,7 +1216,7 @@ pub struct EntityInstance {
 
     /// Pivot coordinates  (`[x,y]` format, values are from 0 to 1) of the Entity
     #[serde(rename = "__pivot")]
-    pub pivot: Vec<f64>,
+    pub pivot: Vec2,
 
     /// The entity "smart" color, guessed from either Entity definition, or one its field
     /// instances.
@@ -1250,7 +1255,7 @@ pub struct EntityInstance {
 
     /// Pixel coordinates (`[x,y]` format) in current level coordinate space. Don't forget
     /// optional layer offsets, if they exist!
-    pub px: Vec<i64>,
+    pub px: IVec2,
 
     /// Entity width in pixels. For non-resizable entities, it will be the same as Entity
     /// definition.
@@ -1447,10 +1452,10 @@ pub struct TileInstance {
 
     /// Pixel coordinates of the tile in the **layer** (`[x,y]` format). Don't forget optional
     /// layer offsets, if they exist!
-    pub px: Vec<i64>,
+    pub px: IVec2,
 
     /// Pixel coordinates of the tile in the **tileset** (`[x,y]` format)
-    pub src: Vec<i64>,
+    pub src: IVec2,
 
     /// The *Tile ID* in the corresponding tileset.
     pub t: i64,
@@ -1571,7 +1576,7 @@ pub struct LevelBackgroundPosition {
 
     /// An array containing the `[x,y]` pixel coordinates of the top-left corner of the
     /// **cropped** background image, depending on `bgPos` option.
-    pub top_left_px: Vec<i64>,
+    pub top_left_px: IVec2,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

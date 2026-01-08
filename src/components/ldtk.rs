@@ -42,20 +42,5 @@ pub struct LDtkLayer(pub String);
 #[derive(Component)]
 pub struct LDtkTile;
 
-#[derive(Clone, Component, Hash, Eq, PartialEq)]
-pub struct LDtkCoord {
-    pub x: i64,
-    pub y: i64,
-}
-
-impl LDtkCoord {
-    pub fn from_ldtk_pixel(tile_size: usize, x: i64, y: i64) -> Self {
-        Self {
-            x: x / tile_size as i64,
-            y: -y / tile_size as i64,
-        }
-    }
-}
-
 #[derive(Component)]
 pub(crate) struct Spawned;

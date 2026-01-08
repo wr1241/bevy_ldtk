@@ -116,11 +116,18 @@ fn spawn_ldtk_int_grid_layer(
             Name::new(layer.identifier.clone()),
             LDtkLayer(layer.iid.clone()),
         ))
+        .insert_if(Visibility::Hidden, || !layer.visible)
         .id();
 
     let entended_layers = extend_ldtk_layer(
-        tile_size,
-        layer.grid_tiles.iter().chain(layer.auto_layer_tiles.iter()),
+        layer
+            .grid_tiles
+            .iter()
+            .chain(layer.auto_layer_tiles.iter())
+            .filter(|tile| {
+                tile.px.x as i64 / (tile_size as i64) < layer.c_wid
+                    && tile.px.y as i64 / (tile_size as i64) < layer.c_hei
+            }),
     );
     let extended_layer_count = entended_layers.len();
 
@@ -128,9 +135,9 @@ fn spawn_ldtk_int_grid_layer(
         .into_iter()
         .enumerate()
         .flat_map(|(layer_index, tiles)| std::iter::repeat(layer_index).zip(tiles.into_iter()))
-        .map(|(layer_index, (coord, tile))| {
-            let x = tile.px[0] as f32;
-            let y = -tile.px[1] as f32;
+        .map(|(layer_index, tile)| {
+            let x = (tile.px.x as i64 + layer.px_total_offset_x) as f32;
+            let y = (-tile.px.y as i64 + layer.px_total_offset_y) as f32;
             let z = (layer_z + layer_index as i64) as f32;
             let transform = Transform::from_xyz(x, y, z);
 
@@ -142,11 +149,11 @@ fn spawn_ldtk_int_grid_layer(
                 },
             );
 
-            sprite.color.set_alpha(tile.a as f32);
+            sprite.color.set_alpha((tile.a * layer.opacity) as f32);
             sprite.flip_x = tile.f & 0b01 != 0;
             sprite.flip_y = tile.f & 0b10 != 0;
 
-            commands.spawn((coord, transform, sprite, LDtkTile)).id()
+            commands.spawn((transform, sprite, LDtkTile)).id()
         })
         .collect::<Vec<_>>();
 
@@ -156,33 +163,27 @@ fn spawn_ldtk_int_grid_layer(
 }
 
 fn extend_ldtk_layer<'a, I: Iterator<Item = &'a TileInstance>>(
-    tile_size: usize,
     tiles: I,
-) -> Vec<Vec<(LDtkCoord, &'a TileInstance)>> {
-    let mut coord_set: HashSet<LDtkCoord> = HashSet::new();
+) -> Vec<Vec<&'a TileInstance>> {
+    let mut coord_set: HashSet<IVec2> = HashSet::new();
     let mut this_layer_tiles = Vec::new();
     let mut above_layer_tiles = Vec::new();
 
     tiles.for_each(|tile| {
-        let coord = LDtkCoord::from_ldtk_pixel(tile_size, tile.px[0], tile.px[1]);
-        if coord_set.contains(&coord) {
+        if coord_set.contains(&tile.px) {
             above_layer_tiles.push(tile);
         } else {
-            this_layer_tiles.push((coord.clone(), tile));
-            coord_set.insert(coord);
+            coord_set.insert(tile.px);
+            this_layer_tiles.push(tile);
         }
     });
 
     let mut layered_tiles = vec![this_layer_tiles];
     if !above_layer_tiles.is_empty() {
-        layered_tiles.extend(extend_ldtk_layer(tile_size, above_layer_tiles.into_iter()));
+        layered_tiles.extend(extend_ldtk_layer(above_layer_tiles.into_iter()));
     }
 
     layered_tiles
-}
-
-fn ldtk_pixel_coord_to_bevy(coord: (i64, i64)) -> (f32, f32) {
-    (coord.0 as f32, -coord.1 as f32)
 }
 
 pub fn despawn_all_ldtk_worlds(
