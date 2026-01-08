@@ -8,6 +8,7 @@ pub(crate) fn spawn_ldtk_world(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     ldtk_world_query: Query<(Entity, &LDtkWorld), Without<Spawned>>,
+    mut clear_color: ResMut<ClearColor>,
 ) {
     ldtk_world_query
         .iter()
@@ -31,6 +32,10 @@ pub(crate) fn spawn_ldtk_world(
                 .entity(world_entity)
                 .add_child(level_entity)
                 .insert(Spawned);
+
+            if let Ok(color) = Srgba::hex(&ldtk_world.level.bg_color) {
+                clear_color.0 = Color::Srgba(color);
+            }
         });
 }
 
@@ -153,7 +158,25 @@ fn spawn_ldtk_int_grid_layer(
             sprite.flip_x = tile.f & 0b01 != 0;
             sprite.flip_y = tile.f & 0b10 != 0;
 
-            commands.spawn((transform, sprite, LDtkTile)).id()
+            let ldtk_grid_coord = LDtkGridCoord(IVec2::new(
+                tile.px.x / layer.grid_size as i32,
+                tile.px.y / layer.grid_size as i32,
+            ));
+
+            let bevy_grid_coord = BevyGridCoord(IVec2::new(
+                tile.px.x / layer.grid_size as i32,
+                layer.c_hei as i32 - tile.px.y / layer.grid_size as i32 - 1,
+            ));
+
+            commands
+                .spawn((
+                    transform,
+                    sprite,
+                    LDtkTile,
+                    ldtk_grid_coord,
+                    bevy_grid_coord,
+                ))
+                .id()
         })
         .collect::<Vec<_>>();
 

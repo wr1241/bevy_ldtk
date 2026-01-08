@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bevy::{asset::UntypedAssetId, prelude::*};
+use bevy::{asset::UntypedAssetId, math::I64Vec2, prelude::*};
 
 use crate::{
     asset::prelude::LDtkProject,
@@ -40,7 +40,14 @@ pub struct LDtkLevel(pub String);
 pub struct LDtkLayer(pub String);
 
 #[derive(Component)]
+#[require(Transform, Visibility)]
 pub struct LDtkTile;
+
+#[derive(Component, Deref, Eq, PartialEq, Reflect)]
+pub struct LDtkGridCoord(pub IVec2);
+
+#[derive(Component, Deref, Eq, PartialEq, Reflect)]
+pub struct BevyGridCoord(pub IVec2);
 
 #[derive(Component)]
 pub(crate) struct Spawned;
