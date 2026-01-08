@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use bevy::prelude::*;
 
-use crate::{components::prelude::*, ldtk::prelude::*, prelude::LevelSelection};
+use crate::{components::prelude::*, ldtk::prelude::*};
 
 pub(crate) fn spawn_ldtk_world(
     mut commands: Commands,
